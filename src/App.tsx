@@ -1,16 +1,23 @@
+import { useMemo } from 'react'
+import { DataTable } from './table'
+import { generateTableData } from './data/generateTableData'
+
 export default function App() {
+  const { columns, data } = useMemo(() => generateTableData(10_000), [])
+
   return (
-    <div className="flex min-h-full flex-col items-center justify-center gap-3 bg-slate-50 p-8 text-center text-slate-800">
-      <h1 className="text-3xl font-semibold tracking-tight">
-        Cemento Data Table
-      </h1>
-      <p className="max-w-md text-slate-500">
-        Phase 0 — scaffold &amp; deploy skeleton is live. The generic, editable,
-        virtualized table lands in the phases ahead.
-      </p>
-      <span className="rounded-full bg-emerald-100 px-3 py-1 text-sm font-medium text-emerald-700">
-        Pipeline online
-      </span>
+    <div className="mx-auto flex h-full max-w-5xl flex-col gap-4 p-6 text-slate-800">
+      <header className="flex flex-wrap items-end justify-between gap-3">
+        <div className="flex flex-col gap-1">
+          <h1 className="text-2xl font-semibold tracking-tight">
+            Cemento Data Table
+          </h1>
+        </div>
+      </header>
+
+      <div className="min-h-0 flex-1">
+        <DataTable columns={columns} data={data} />
+      </div>
     </div>
   )
 }

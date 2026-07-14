@@ -1,20 +1,13 @@
 # Cemento Data Table
 
-A generic, reusable, virtualization-optimized editable data table built in React +
-TypeScript for the Cemento client-side assignment.
+A **generic, reusable, virtualized, editable** data table built in React + TypeScript for
+the Cemento client-side assignment. Renders any `columns` + `data` schema, supports
+in-place cell editing with local save, column show/hide, and stays fast on 10,000 rows
+via row virtualization.
 
 **Live demo:** https://ronhachmon.github.io/Cemento/
 
-
-
-## Tech stack
-
-- **Vite** + **React 19** + **TypeScript**
-- **Tailwind CSS v4** for styling
-- **oxlint** + **Prettier** for linting/formatting
-- Deployed to **GitHub Pages** via GitHub Actions
-
-## Getting started
+## Run locally
 
 ```bash
 npm install
@@ -25,8 +18,10 @@ npm run lint       # oxlint
 npm run format     # prettier --write
 ```
 
-## Deployment
+## Tech stack
 
-Pushing to `main` triggers `.github/workflows/deploy.yml`, which builds the app and
-publishes `dist/` to GitHub Pages. The Vite `base` is set to `/Cemento/` to match the
-repository name so assets resolve on the Pages subpath.
+- **Vite** + **React 19** + **TypeScript**, **Tailwind CSS v4**
+- **@tanstack/react-virtual** (headless virtualization primitive)
+- **@faker-js/faker** (seeded, deterministic demo data: 10,000 rows)
+- **oxlint** + **Prettier**; deployed to **GitHub Pages** via GitHub Actions
+
