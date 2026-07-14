@@ -1,5 +1,6 @@
 import type { ColumnDef } from '../table/types'
 import { patternValidator, rangeValidator } from '../table/cellTypes/validators'
+import { fa } from '@faker-js/faker'
 
 /**
  * Demo column schema covering every supported type (at least one each).
@@ -44,6 +45,7 @@ export const demoColumns: ColumnDef[] = [
     title: 'Active',
     type: 'boolean',
     width: 90,
+    editable: false,
   },
   {
     id: 'role',
@@ -52,6 +54,7 @@ export const demoColumns: ColumnDef[] = [
     type: 'select',
     width: 130,
     options: ['Admin', 'Editor', 'Viewer', 'Guest'],
+    editable: false,
   },
   {
     id: 'department',

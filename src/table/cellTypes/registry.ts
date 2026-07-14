@@ -1,15 +1,7 @@
 import type { CellValue, ColumnDef, ColumnType } from '../types'
 import type { CellTypeConfig } from './types'
 import { validateNumber } from './validators'
-import {
-  BooleanCell,
-  NumberCell,
-  NumberEditor,
-  SelectCell,
-  SelectEditor,
-  StringCell,
-  StringEditor,
-} from './cells'
+import { BooleanCell, NumberCell, SelectCell, StringCell } from './cells'
 
 /**
  * The single seam for type-specific cell behavior. Keyed by {@link ColumnType} as a
@@ -17,18 +9,14 @@ import {
  * here — exhaustiveness by construction. The table engine only ever does
  * `cellRegistry[column.type]`, never a per-type branch.
  *
- * `boolean` registers no Editor: its Display checkbox commits directly.
- * `select`/`boolean` need no validate: their editors can only produce legal values.
+ * `boolean` sets `hasEditMode: false`: its checkbox commits directly from the display.
+ * `select`/`boolean` need no validate: their edit UIs can only produce legal values.
  */
 export const cellRegistry: Record<ColumnType, CellTypeConfig> = {
-  string: { Display: StringCell, Editor: StringEditor },
-  number: {
-    Display: NumberCell,
-    Editor: NumberEditor,
-    validate: validateNumber,
-  },
-  boolean: { Display: BooleanCell },
-  select: { Display: SelectCell, Editor: SelectEditor },
+  string: { Cell: StringCell },
+  number: { Cell: NumberCell, validate: validateNumber },
+  boolean: { Cell: BooleanCell, hasEditMode: false },
+  select: { Cell: SelectCell },
 }
 
 /**

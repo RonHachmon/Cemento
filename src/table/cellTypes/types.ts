@@ -1,25 +1,19 @@
 import type { ReactNode } from 'react'
 import type { CellValue, ColumnDef } from '../types'
 
-/** Props passed to every cell Display component. */
-export interface CellDisplayProps {
+/** Props passed to every cell component. */
+export interface CellProps {
   value: CellValue
   column: ColumnDef
+  /** True while the cell is in edit mode. Never true when `hasEditMode` is false. */
+  isEditing: boolean
   /**
-   * Present only when the cell is editable. Lets a Display commit a new value
-   * directly without entering edit mode — used by types whose display *is* the
-   * editor (e.g. boolean's checkbox). Most Displays ignore it.
+   * Commit a new value and leave edit mode. Absent when the cell is read-only —
+   * types that edit directly from their display (boolean's checkbox) use its
+   * absence to disable themselves.
    */
-  onCommitValue?: (value: CellValue) => void
-}
-
-/** Props passed to every cell Editor component. */
-export interface CellEditorProps {
-  value: CellValue
-  column: ColumnDef
-  /** Commit the new value and leave edit mode. */
-  onCommit: (value: CellValue) => void
-  /** Discard the edit and leave edit mode. */
+  onCommit?: (value: CellValue) => void
+  /** Leave edit mode without committing. */
   onCancel: () => void
 }
 
@@ -30,12 +24,13 @@ export interface CellEditorProps {
  * registry entry and zero engine changes.
  */
 export interface CellTypeConfig {
-  Display: (props: CellDisplayProps) => ReactNode
+  /** Single component for the type; branches on `isEditing` when it has an edit mode. */
+  Cell: (props: CellProps) => ReactNode
   /**
-   * In-place editor opened on cell click. Omitted for types that edit directly
-   * from their Display (boolean's checkbox toggles without an edit mode).
+   * false for types that edit directly from their display (boolean's checkbox
+   * toggles without an edit mode). Default true.
    */
-  Editor?: (props: CellEditorProps) => ReactNode
+  hasEditMode?: boolean
   /** Validate a candidate value; return an error message or null when valid. */
   validate?: (value: CellValue, column: ColumnDef) => string | null
 }

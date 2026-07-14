@@ -34,46 +34,39 @@ function TableCellComponent({ row, column, draftValue, onCommit }: TableCellProp
   )
   const cancelEdit = useCallback(() => setIsEditing(false), [])
 
-  if (isEditing && config.Editor) {
-    return (
-      <div
-        role="cell"
-        className="flex items-center border-r border-slate-100 px-1.5 last:border-r-0"
-      >
-        <config.Editor
-          value={value}
-          column={column}
-          onCommit={commitValue}
-          onCancel={cancelEdit}
-        />
-      </div>
-    )
-  }
-
-  const canOpenEditor = editable && config.Editor != null
+  const canOpenEditor = editable && config.hasEditMode !== false
+  // Handlers only attach outside edit mode: Enter inside the editor input
+  // bubbles to this wrapper and would instantly re-open the editor.
+  const opensOnInteraction = canOpenEditor && !isEditing
 
   return (
     <div
       role="cell"
-      tabIndex={canOpenEditor ? 0 : undefined}
-      onClick={canOpenEditor ? () => setIsEditing(true) : undefined}
+      tabIndex={opensOnInteraction ? 0 : undefined}
+      onClick={opensOnInteraction ? () => setIsEditing(true) : undefined}
       onKeyDown={
-        canOpenEditor
+        opensOnInteraction
           ? (e) => {
               if (e.key === 'Enter') setIsEditing(true)
             }
           : undefined
       }
-      className={`relative flex items-center truncate border-r border-slate-100 px-3 last:border-r-0 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-blue-400 ${
-        canOpenEditor ? 'cursor-text' : ''
-      } ${isDirty ? 'bg-amber-50' : ''}`}
+      className={`relative flex items-center border-r border-slate-100 last:border-r-0 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-blue-400 ${
+        isEditing
+          ? 'px-1.5'
+          : `truncate px-3 ${canOpenEditor ? 'cursor-text' : ''} ${
+              isDirty ? 'bg-amber-50' : ''
+            }`
+      }`}
     >
-      <config.Display
+      <config.Cell
         value={value}
         column={column}
-        onCommitValue={editable ? commitValue : undefined}
+        isEditing={isEditing}
+        onCommit={editable ? commitValue : undefined}
+        onCancel={cancelEdit}
       />
-      {isDirty && (
+      {isDirty && !isEditing && (
         <span
           aria-label="unsaved change"
           className="absolute right-1 top-1 h-1.5 w-1.5 rounded-full bg-amber-400"
