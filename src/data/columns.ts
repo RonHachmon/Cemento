@@ -1,6 +1,6 @@
 import type { ColumnDef } from '../table/types'
 import { patternValidator, rangeValidator } from '../table/cellTypes/validators'
-import { fa } from '@faker-js/faker'
+
 
 /**
  * Demo column schema covering every supported type (at least one each).
