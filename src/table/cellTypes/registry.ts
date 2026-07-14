@@ -1,10 +1,15 @@
-import type { ColumnType } from '../types'
+import type { CellValue, ColumnDef, ColumnType } from '../types'
 import type { CellTypeConfig } from './types'
-import { StringCell, StringEditor } from './StringCell'
-import { NumberCell, NumberEditor } from './NumberCell'
 import { validateNumber } from './validators'
-import { BooleanCell } from './BooleanCell'
-import { SelectCell, SelectEditor } from './SelectCell'
+import {
+  BooleanCell,
+  NumberCell,
+  NumberEditor,
+  SelectCell,
+  SelectEditor,
+  StringCell,
+  StringEditor,
+} from './cells'
 
 /**
  * The single seam for type-specific cell behavior. Keyed by {@link ColumnType} as a
@@ -24,4 +29,21 @@ export const cellRegistry: Record<ColumnType, CellTypeConfig> = {
   },
   boolean: { Display: BooleanCell },
   select: { Display: SelectCell, Editor: SelectEditor },
+}
+
+/**
+ * Full validation for a candidate cell value: the type-level check from the
+ * registry first, then the column's own `validate` (e.g. a regex from
+ * `patternValidator`). Returns the first error message, or null when valid.
+ * Lives here (not validators.ts) to avoid an import cycle with the registry.
+ */
+export function validateCell(
+  value: CellValue,
+  column: ColumnDef,
+): string | null {
+  return (
+    cellRegistry[column.type].validate?.(value, column) ??
+    column.validate?.(value) ??
+    null
+  )
 }

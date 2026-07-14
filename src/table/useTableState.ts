@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import type { CellValue, Row } from './types'
 
 /** Draft edits: rowId → (columnId → new value). Only touched rows have entries. */
@@ -29,20 +29,13 @@ export function useTableState(
   const [rows, setRows] = useState(initialRows)
   const [drafts, setDrafts] = useState<Drafts>(new Map())
 
-  // Latest state for stable event-handler callbacks (no side effects inside
-  // state updaters — StrictMode double-invokes those).
-  const rowsRef = useRef(rows)
-  rowsRef.current = rows
-  const draftsRef = useRef(drafts)
-  draftsRef.current = drafts
-
+  // Depends only on `rows`, which changes only on save — so the callback stays
+  // stable across edits and row/cell memoization keeps working.
   const setCellDraft = useCallback(
     (rowId: string, columnId: string, value: CellValue) => {
       setDrafts((prev) => {
         const next = new Map(prev)
-        const committed = rowsRef.current.find((r) => r.id === rowId)?.[
-          columnId
-        ]
+        const committed = rows.find((r) => r.id === rowId)?.[columnId]
         const draft = { ...next.get(rowId) }
 
         if (value === committed) {
@@ -57,15 +50,15 @@ export function useTableState(
         return next
       })
     },
-    [],
+    [rows],
   )
 
   const save = useCallback(() => {
-    const merged = applyDrafts(rowsRef.current, draftsRef.current)
+    const merged = applyDrafts(rows, drafts)
     setRows(merged)
     setDrafts(new Map())
     onSave?.(merged)
-  }, [onSave])
+  }, [rows, drafts, onSave])
 
   const reset = useCallback(() => setDrafts(new Map()), [])
 

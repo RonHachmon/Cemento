@@ -9,29 +9,20 @@ export interface TableRowProps {
   columns: ColumnDef[]
   /** This row's unsaved edits (columnId → value), if any. */
   draft: Record<string, CellValue> | undefined
-  /** Column id currently being edited in this row, or null. */
-  editingColumnId: string | null
-  onStartEdit: (rowId: string, columnId: string) => void
   onCommit: (rowId: string, columnId: string, value: CellValue) => void
-  onCancelEdit: () => void
   /** Absolute-position style supplied by the virtualizer. */
   style?: CSSProperties
 }
 
-function TableRowComponent({
-  row,
-  columns,
-  draft,
-  editingColumnId,
-  onStartEdit,
-  onCommit,
-  onCancelEdit,
-  style,
-}: TableRowProps) {
+function TableRowComponent({ row, columns, draft, onCommit, style }: TableRowProps) {
   return (
     <div
       role="row"
-      className="grid border-b border-slate-100 bg-white hover:bg-slate-50"
+      // focus-within:z-10 — the virtualizer's transform makes each row its own
+      // stacking context, so a z-index inside a cell cannot beat sibling rows.
+      // While an editor holds focus, lift the row above its neighbors so the
+      // editor's error bubble (which spills below the row) stays visible.
+      className="grid border-b border-slate-100 bg-white hover:bg-slate-50 focus-within:z-10"
       style={{
         gridTemplateColumns: 'var(--grid-cols)',
         height: ROW_HEIGHT,
@@ -44,10 +35,7 @@ function TableRowComponent({
           row={row}
           column={column}
           draftValue={draft?.[column.id]}
-          isEditing={editingColumnId === column.id}
-          onStartEdit={onStartEdit}
           onCommit={onCommit}
-          onCancelEdit={onCancelEdit}
         />
       ))}
     </div>

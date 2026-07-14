@@ -41,6 +41,16 @@ export interface ColumnDef {
    * non-editable without special-casing specific column ids.
    */
   editable?: boolean
+  /**
+   * ADDED: optional per-column validator, run when a cell in this column is
+   * edited (after the type-level check from the registry). Return an error
+   * message to block the commit, or `null` when valid. A function covers
+   * regex, ranges, and custom rules with a single schema field — use
+   * `patternValidator(regex, message)` for the common regex case (e.g. email
+   * or phone columns). Rationale: validity is often a property of the column
+   * (an email-shaped string), not of the data type (string).
+   */
+  validate?: (value: CellValue) => string | null
 }
 
 /** A single data row. `id` is required; every other key is a column id mapping to

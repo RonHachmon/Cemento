@@ -1,5 +1,4 @@
 import { useVirtualizer } from '@tanstack/react-virtual'
-import type { RefObject } from 'react'
 import type { CellValue, ColumnDef, Row } from './types'
 import type { Drafts } from './useTableState'
 import { TableRow } from './TableRow'
@@ -9,11 +8,11 @@ export interface TableBodyProps {
   columns: ColumnDef[]
   rows: Row[]
   drafts: Drafts
-  editingCell: { rowId: string; columnId: string } | null
-  onStartEdit: (rowId: string, columnId: string) => void
   onCommit: (rowId: string, columnId: string, value: CellValue) => void
-  onCancelEdit: () => void
-  scrollRef: RefObject<HTMLDivElement | null>
+  /** The scroll container element, null until mounted. Passed as an element
+   * (not a ref) so its arrival re-renders this component and the virtualizer
+   * picks it up — a ref set after mount would go unnoticed. */
+  scrollEl: HTMLDivElement | null
 }
 
 /**
@@ -26,19 +25,16 @@ export function TableBody({
   columns,
   rows,
   drafts,
-  editingCell,
-  onStartEdit,
   onCommit,
-  onCancelEdit,
-  scrollRef,
+  scrollEl,
 }: TableBodyProps) {
   const virtualizer = useVirtualizer({
     count: rows.length,
-    getScrollElement: () => scrollRef.current,
+    getScrollElement: () => scrollEl,
     estimateSize: () => ROW_HEIGHT,
     overscan: 10,
-    // Assumed viewport until the real scroll element is measured — gives a
-    // sensible first paint and makes the table renderable server-side.
+    // Assumed viewport until the real scroll element is measured — without it
+    // the virtualizer starts from a 0×0 rect and renders no rows on first paint.
     initialRect: { width: 800, height: 600 },
   })
 
@@ -56,12 +52,7 @@ export function TableBody({
             row={row}
             columns={columns}
             draft={drafts.get(row.id)}
-            editingColumnId={
-              editingCell?.rowId === row.id ? editingCell.columnId : null
-            }
-            onStartEdit={onStartEdit}
             onCommit={onCommit}
-            onCancelEdit={onCancelEdit}
             style={{
               position: 'absolute',
               top: 0,

@@ -1,4 +1,5 @@
 import type { ColumnDef } from '../table/types'
+import { patternValidator, rangeValidator } from '../table/cellTypes/validators'
 
 /**
  * Demo column schema covering every supported type (at least one each).
@@ -8,11 +9,42 @@ import type { ColumnDef } from '../table/types'
  * reusable" requirement.
  */
 export const demoColumns: ColumnDef[] = [
-  { id: 'name', ordinalNo: 1, title: 'Full Name', type: 'string', width: 200 },
-  { id: 'email', ordinalNo: 2, title: 'Email', type: 'string', width: 240 },
-  { id: 'age', ordinalNo: 3, title: 'Age', type: 'number', width: 90 },
-  { id: 'salary', ordinalNo: 4, title: 'Salary', type: 'number', width: 130 },
-  { id: 'active', ordinalNo: 5, title: 'Active', type: 'boolean', width: 90 },
+  { 
+    id: 'name',
+    ordinalNo: 1,
+    title: 'Full Name',
+    type: 'string',
+    width: 200 },
+  {
+    id: 'email',
+    ordinalNo: 2,
+    title: 'Email',
+    type: 'string',
+    width: 240,
+    validate: patternValidator(/^\S+@\S+\.\S+$/, 'Invalid email address'),
+  },
+  {
+    id: 'age',
+    ordinalNo: 3,
+    title: 'Age',
+    type: 'number',
+    width: 90,
+    validate: rangeValidator(1, 120),
+  },
+  {
+    id: 'salary',
+    ordinalNo: 4,
+    title: 'Salary',
+    type: 'number',
+    width: 130,
+  },
+  {
+    id: 'active',
+    ordinalNo: 5,
+    title: 'Active',
+    type: 'boolean',
+    width: 90,
+  },
   {
     id: 'role',
     ordinalNo: 6,

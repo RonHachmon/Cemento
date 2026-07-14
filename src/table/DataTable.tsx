@@ -1,6 +1,6 @@
-import { useCallback, useMemo, useRef, useState } from 'react'
+import { useMemo, useState } from 'react'
 import type { CSSProperties } from 'react'
-import type { CellValue, ColumnDef, Row } from './types'
+import type { ColumnDef, Row } from './types'
 import { TableHeader } from './TableHeader'
 import { TableBody } from './TableBody'
 import { Toolbar } from './Toolbar'
@@ -24,7 +24,11 @@ export interface DataTableProps {
  * remount with a `key` (e.g. `<DataTable key={datasetId} …/>`).
  */
 export function DataTable({ columns, data, onSave }: DataTableProps) {
-  const scrollRef = useRef<HTMLDivElement>(null)
+  // Callback ref + state (not useRef): the scroll element renders here but the
+  // virtualizer lives in TableBody, whose mount effects run before an ancestor
+  // ref would be attached. Storing the element in state re-renders TableBody
+  // once it exists, so the virtualizer can subscribe to scroll events.
+  const [scrollEl, setScrollEl] = useState<HTMLDivElement | null>(null)
 
   const orderedColumns = useMemo(
     () => [...columns].sort((a, b) => a.ordinalNo - b.ordinalNo),
@@ -35,24 +39,6 @@ export function DataTable({ columns, data, onSave }: DataTableProps) {
   const { rows, drafts, setCellDraft, save, reset, dirtyCount } = useTableState(
     data,
     onSave,
-  )
-
-  const [editingCell, setEditingCell] = useState<{
-    rowId: string
-    columnId: string
-  } | null>(null)
-
-  const startEdit = useCallback(
-    (rowId: string, columnId: string) => setEditingCell({ rowId, columnId }),
-    [],
-  )
-  const cancelEdit = useCallback(() => setEditingCell(null), [])
-  const commitEdit = useCallback(
-    (rowId: string, columnId: string, value: CellValue) => {
-      setCellDraft(rowId, columnId, value)
-      setEditingCell(null)
-    },
-    [setCellDraft],
   )
 
   // One shared column template keeps header and body cells aligned. Fixed widths
@@ -79,7 +65,7 @@ export function DataTable({ columns, data, onSave }: DataTableProps) {
       />
 
       <div
-        ref={scrollRef}
+        ref={setScrollEl}
         className="min-h-0 flex-1 overflow-auto"
         style={{ '--grid-cols': gridTemplateColumns } as CSSProperties}
       >
@@ -87,7 +73,7 @@ export function DataTable({ columns, data, onSave }: DataTableProps) {
           <div className="flex h-full items-center justify-center p-8 text-slate-400">
             {rows.length === 0
               ? 'No data to display.'
-              : 'All columns are hidden — use the Columns menu to show some.'}
+              : 'All columns are hidden , use the Columns menu to show some.'}
           </div>
         ) : (
           /* w-max min-w-full: grow to fit fixed columns (horizontal scroll) but
@@ -98,11 +84,8 @@ export function DataTable({ columns, data, onSave }: DataTableProps) {
               columns={visibleColumns}
               rows={rows}
               drafts={drafts}
-              editingCell={editingCell}
-              onStartEdit={startEdit}
-              onCommit={commitEdit}
-              onCancelEdit={cancelEdit}
-              scrollRef={scrollRef}
+              onCommit={setCellDraft}
+              scrollEl={scrollEl}
             />
           </div>
         )}
