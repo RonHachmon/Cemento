@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { memo, type ReactNode } from 'react';
 import type { CellValue, ColumnDef } from '../../data/database';
 import { Tooltip } from '../Tooltip';
 
@@ -16,7 +16,7 @@ function withErrorTooltip(error: string | null, input: ReactNode) {
   return error ? <Tooltip content={error}>{input}</Tooltip> : input;
 }
 
-export function StringCell({ column, value, onChange }: CellEditorProps) {
+export const StringCell = memo(function StringCell({ column, value, onChange }: CellEditorProps) {
   const error = getValidationError(column, value);
   return withErrorTooltip(
     error,
@@ -28,9 +28,9 @@ export function StringCell({ column, value, onChange }: CellEditorProps) {
       onChange={(e) => onChange(e.target.value)}
     />
   );
-}
+});
 
-export function NumberCell({ column, value, onChange }: CellEditorProps) {
+export const NumberCell = memo(function NumberCell({ column, value, onChange }: CellEditorProps) {
   const error = getValidationError(column, value);
   return withErrorTooltip(
     error,
@@ -42,9 +42,9 @@ export function NumberCell({ column, value, onChange }: CellEditorProps) {
       onChange={(e) => onChange(e.target.value === '' ? null : Number(e.target.value))}
     />
   );
-}
+});
 
-export function BooleanCell({ column, value, onChange }: CellEditorProps) {
+export const BooleanCell = memo(function BooleanCell({ column, value, onChange }: CellEditorProps) {
   return (
     <div className="flex justify-center items-center">
       <input
@@ -56,9 +56,9 @@ export function BooleanCell({ column, value, onChange }: CellEditorProps) {
       />
     </div>
   );
-}
+});
 
-export function SelectCell({ column, value, onChange }: CellEditorProps) {
+export const SelectCell = memo(function SelectCell({ column, value, onChange }: CellEditorProps) {
   if (!column.isEditable) return <span>{String(value ?? '')}</span>;
   const error = getValidationError(column, value);
   return withErrorTooltip(
@@ -79,4 +79,4 @@ export function SelectCell({ column, value, onChange }: CellEditorProps) {
       ))}
     </select>
   );
-}
+});

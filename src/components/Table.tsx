@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { CellValue } from '../data/database';
 import { mockTableDataFaker } from '../data/mockDataFaker';
 import DataGrid from './DataGrid';
@@ -31,9 +31,9 @@ export default function Table() {
     return () => document.removeEventListener('mousedown', onClickOutside);
   }, []);
 
-  function handleChange(rowId: string, columnId: string, value: CellValue) {
+  const handleChange = useCallback((rowId: string, columnId: string, value: CellValue) => {
     setData((prev) => prev.map((row) => (row.id === rowId ? { ...row, [columnId]: value } : row)));
-  }
+  }, []);
 
   function toggleColumn(id: string) {
     setVisibleColumnIds((prev) => {
