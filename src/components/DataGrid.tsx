@@ -7,6 +7,7 @@ interface DataGridProps {
   columns: ColumnDef[];
   data: RowData[];
   onChange: (rowId: string, columnId: string, value: CellValue) => void;
+  className?: string;
 }
 
 interface GridRowProps {
@@ -35,7 +36,9 @@ const GridRow = memo(function GridRow({
 
   return (
     <tr
-      className="flex absolute w-full"
+      className={`flex absolute w-full transition-colors hover:bg-slate-100/70 ${
+        virtualIndex % 2 === 0 ? 'bg-white' : 'bg-slate-50/60'
+      }`}
       style={{ transform: `translateY(${virtualStart}px)` }}
       ref={measureElement}
       data-index={virtualIndex}
@@ -44,7 +47,7 @@ const GridRow = memo(function GridRow({
         <td
           key={col.id}
           style={columnStyles.get(col.id)}
-          className="box-border px-3 py-2 border-b border-gray-200"
+          className="box-border px-3 py-2 border-b border-slate-100"
         >
           <CellRenderer
             column={col}
@@ -57,7 +60,7 @@ const GridRow = memo(function GridRow({
   );
 });
 
-export default function DataGrid({ columns, data, onChange }: DataGridProps) {
+export default function DataGrid({ columns, data, onChange, className = '' }: DataGridProps) {
   const parentRef = useRef(null);
 
   const rowVirtualizer = useVirtualizer({
@@ -76,17 +79,17 @@ export default function DataGrid({ columns, data, onChange }: DataGridProps) {
 
     <div
       ref={parentRef}
-      className="h-[400px] overflow-auto rounded-md border border-gray-800"
+      className={`overflow-auto rounded-xl border border-slate-200 bg-white shadow-sm ${className}`}
     >
 
       <table className="w-full border-collapse text-sm">
-        <thead className="sticky top-0 z-10 bg-gray-50">
-          <tr className="flex">
+        <thead className="sticky top-0 z-10 bg-slate-50/95 backdrop-blur">
+          <tr className="flex border-b border-slate-200">
             {columns.map((col) => (
               <th
                 key={col.id}
                 style={columnStyles.get(col.id)}
-                className="box-border px-3 py-2 text-left font-semibold text-gray-700"
+                className="box-border px-3 py-2.5 text-left text-xs font-semibold uppercase tracking-wide text-slate-500"
               >
                 {col.title}
               </th>
