@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { CellValue } from '../data/database';
 import { mockTableDataFaker } from '../data/mockDataFaker';
-import { CellRenderer } from './cells/CellRenderer';
+import DataGrid from './DataGrid';
 
 export default function Table() {
   const { columns } = mockTableDataFaker;
@@ -22,7 +22,10 @@ export default function Table() {
 
   useEffect(() => {
     function onClickOutside(e: MouseEvent) {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) setIsOpen(false);
+      if (containerRef.current && !containerRef.current.contains(e.target as Node))
+        {
+            setIsOpen(false);
+        }
     }
     document.addEventListener('mousedown', onClickOutside);
     return () => document.removeEventListener('mousedown', onClickOutside);
@@ -70,30 +73,7 @@ export default function Table() {
         )}
       </div>
 
-    <table>
-      <thead>
-        <tr>
-          {displayedColumns.map((col) => (
-            <th key={col.id}>{col.title}</th>
-          ))}
-        </tr>
-      </thead>
-      <tbody>
-        {data.map((row) => (
-          <tr key={row.id}>
-            {displayedColumns.map((col) => (
-              <td key={col.id}>
-                <CellRenderer
-                  column={col}
-                  value={row[col.id]}
-                  onChange={(value) => handleChange(row.id, col.id, value)}
-                />
-              </td>
-            ))}
-          </tr>
-        ))}
-      </tbody>
-    </table>
+      <DataGrid columns={displayedColumns} data={data} onChange={handleChange} />
     </>
   );
 }
