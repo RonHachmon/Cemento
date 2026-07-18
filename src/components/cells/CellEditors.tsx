@@ -8,19 +8,16 @@ export interface CellEditorProps {
   onChange: (value: CellValue) => void;
 }
 
-function getValidationError(column: ColumnDef, value: CellValue) {
-  return column.validation?.(value) ?? null;
-}
-
 function withErrorTooltip(error: string | null, input: ReactNode) {
   return error ? <Tooltip content={error}>{input}</Tooltip> : input;
 }
 
 export const StringCell = memo(function StringCell({ column, value, onChange }: CellEditorProps) {
-  const error = getValidationError(column, value);
+  const error = column.validation?.(value) ?? null;
   return withErrorTooltip(
     error,
     <input
+      aria-label={column.title}
       disabled={!column.isEditable}
       type="text"
       className={error ? 'border border-red-400 rounded' : undefined}
@@ -31,10 +28,11 @@ export const StringCell = memo(function StringCell({ column, value, onChange }: 
 });
 
 export const NumberCell = memo(function NumberCell({ column, value, onChange }: CellEditorProps) {
-  const error = getValidationError(column, value);
+  const error = column.validation?.(value) ?? null;
   return withErrorTooltip(
     error,
     <input
+      aria-label={column.title}
       className={`inline-block text-right w-20 ${error ? 'border border-red-400 rounded' : ''}`}
       disabled={!column.isEditable}
       type="number"
@@ -48,6 +46,7 @@ export const BooleanCell = memo(function BooleanCell({ column, value, onChange }
   return (
     <div className="flex justify-center items-center">
       <input
+        aria-label={column.title}
         className="border-2"
         type="checkbox"
         checked={Boolean(value)}
@@ -60,10 +59,11 @@ export const BooleanCell = memo(function BooleanCell({ column, value, onChange }
 
 export const SelectCell = memo(function SelectCell({ column, value, onChange }: CellEditorProps) {
   if (!column.isEditable) return <span>{String(value ?? '')}</span>;
-  const error = getValidationError(column, value);
+  const error = column.validation?.(value) ?? null;
   return withErrorTooltip(
     error,
     <select
+      aria-label={column.title}
       className={error ? 'border border-red-400 rounded' : undefined}
       disabled={!column.isEditable}
       value={typeof value === 'string' ? value : ''}

@@ -1,7 +1,10 @@
-import { memo, useCallback, useMemo, useRef, type CSSProperties } from 'react';
+import { memo, useMemo, useRef, type CSSProperties } from 'react';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import type { CellValue, ColumnDef, Row as RowData } from '../data/database';
 import { CellRenderer } from './cells/CellRenderer';
+
+const ROW_ESTIMATE_HEIGHT = 40;
+const ROW_OVERSCAN = 10;
 
 interface DataGridProps {
   columns: ColumnDef[];
@@ -29,10 +32,15 @@ const GridRow = memo(function GridRow({
   measureElement,
   onChange,
 }: GridRowProps) {
-  const handleCellChange = useCallback(
-    (columnId: string, value: CellValue) => onChange(row.id, columnId, value),
-    [row.id, onChange]
-  );
+  // Stable per-column callbacks so a memoized CellRenderer only re-renders when
+  // its own value changes, not on every render of the row it lives in.
+  const cellChangeHandlers = useMemo(() => {
+    const handlers = new Map<string, (value: CellValue) => void>();
+    for (const col of columns) {
+      handlers.set(col.id, (value) => onChange(row.id, col.id, value));
+    }
+    return handlers;
+  }, [columns, row.id, onChange]);
 
   return (
     <tr
@@ -52,7 +60,7 @@ const GridRow = memo(function GridRow({
           <CellRenderer
             column={col}
             value={row[col.id]}
-            onChange={(value) => handleCellChange(col.id, value)}
+            onChange={cellChangeHandlers.get(col.id)!}
           />
         </td>
       ))}
@@ -61,13 +69,13 @@ const GridRow = memo(function GridRow({
 });
 
 export default function DataGrid({ columns, data, onChange, className = '' }: DataGridProps) {
-  const parentRef = useRef(null);
+  const parentRef = useRef<HTMLDivElement>(null);
 
   const rowVirtualizer = useVirtualizer({
     count: data.length,
     getScrollElement: () => parentRef.current,
-    estimateSize: () => 40,
-    overscan: 10,
+    estimateSize: () => ROW_ESTIMATE_HEIGHT,
+    overscan: ROW_OVERSCAN,
   });
 
   const columnStyles = useMemo(
@@ -76,12 +84,10 @@ export default function DataGrid({ columns, data, onChange, className = '' }: Da
   );
 
   return (
-
     <div
       ref={parentRef}
       className={`overflow-auto rounded-xl border border-slate-200 bg-white shadow-sm ${className}`}
     >
-
       <table className="w-full border-collapse text-sm">
         <thead className="sticky top-0 z-10 bg-slate-50/95 backdrop-blur">
           <tr className="flex border-b border-slate-200">
@@ -97,47 +103,24 @@ export default function DataGrid({ columns, data, onChange, className = '' }: Da
           </tr>
         </thead>
 
-        <tbody
-          style={{ height: rowVirtualizer.getTotalSize() }}
-          className="relative block"
-          >
-            {
-            rowVirtualizer.getVirtualItems().map((virtualRow) => {
-              const row = data[virtualRow.index];
-              return (
-                <GridRow
-                  key={virtualRow.key}
-                  row={row}
-                  columns={columns}
-                  columnStyles={columnStyles}
-                  virtualIndex={virtualRow.index}
-                  virtualStart={virtualRow.start}
-                  measureElement={rowVirtualizer.measureElement}
-                  onChange={onChange}
-                />
-              );
-            })}
-
-          </tbody>
-        {/* <tbody
-          style={{ height: rowVirtualizer.getTotalSize() }}
-          className="relative block"
-        >
-          {data.map((row) => (
-            <tr key={row.id}>
-              {columns.map((col) => (
-                <td key={col.id}>
-                  <CellRenderer
-                    column={col}
-                    value={row[col.id]}
-                    onChange={(value) => onChange(row.id, col.id, value)}
-                  />
-                </td>
-              ))}
-            </tr>
-          ))}
-        </tbody> */}
+        <tbody style={{ height: rowVirtualizer.getTotalSize() }} className="relative block">
+          {rowVirtualizer.getVirtualItems().map((virtualRow) => {
+            const row = data[virtualRow.index];
+            return (
+              <GridRow
+                key={virtualRow.key}
+                row={row}
+                columns={columns}
+                columnStyles={columnStyles}
+                virtualIndex={virtualRow.index}
+                virtualStart={virtualRow.start}
+                measureElement={rowVirtualizer.measureElement}
+                onChange={onChange}
+              />
+            );
+          })}
+        </tbody>
       </table>
-      </div>
+    </div>
   );
 }

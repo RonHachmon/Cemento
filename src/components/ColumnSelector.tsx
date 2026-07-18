@@ -21,8 +21,15 @@ export default function ColumnSelector({
         setIsOpen(false);
       }
     }
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape') setIsOpen(false);
+    }
     document.addEventListener('mousedown', onClickOutside);
-    return () => document.removeEventListener('mousedown', onClickOutside);
+    document.addEventListener('keydown', onKeyDown);
+    return () => {
+      document.removeEventListener('mousedown', onClickOutside);
+      document.removeEventListener('keydown', onKeyDown);
+    };
   }, []);
 
   return (
@@ -32,7 +39,7 @@ export default function ColumnSelector({
         onClick={() => setIsOpen((o) => !o)}
         aria-haspopup="listbox"
         aria-expanded={isOpen}
-        className="w-full bg-white text-slate-700 text-sm border border-slate-300 rounded-lg pl-3 pr-8 py-2 flex items-center justify-between transition duration-200 ease focus:outline-none focus:border-slate-400 hover:border-slate-400 shadow-sm focus:shadow-md cursor-pointer"
+        className="w-full bg-white text-slate-700 text-sm border border-slate-300 rounded-lg pl-3 pr-8 py-2 flex items-center justify-between transition duration-200 ease-in-out focus:outline-none focus:border-slate-400 hover:border-slate-400 shadow-sm focus:shadow-md cursor-pointer"
       >
         <span>Select columns</span>
         <span aria-hidden="true">▾</span>

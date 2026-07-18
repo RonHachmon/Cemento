@@ -6,10 +6,13 @@ import DataGrid from './DataGrid';
 
 export default function Table() {
   const { columns } = mockTableDataFaker;
-  const [data, setData] = useState(mockTableDataFaker.data);
+  const [rowsById, setRowsById] = useState(
+    () => new Map(mockTableDataFaker.data.map((row) => [row.id, row]))
+  );
   const [visibleColumnIds, setVisibleColumnIds] = useState<Set<string>>(
     () => new Set(columns.map((c) => c.id))
   );
+  const data = useMemo(() => [...rowsById.values()], [rowsById]);
   const sortedColumns = useMemo(
     () => [...columns].sort((a, b) => a.ordinalNo - b.ordinalNo),
     [columns]
@@ -20,13 +23,20 @@ export default function Table() {
   );
 
   const handleChange = useCallback((rowId: string, columnId: string, value: CellValue) => {
-    setData((prev) => prev.map((row) => (row.id === rowId ? { ...row, [columnId]: value } : row)));
+    setRowsById((prev) => {
+      const row = prev.get(rowId);
+      if (!row) return prev;
+      const next = new Map(prev);
+      next.set(rowId, { ...row, [columnId]: value });
+      return next;
+    });
   }, []);
 
   const toggleColumn = useCallback((id: string) => {
     setVisibleColumnIds((prev) => {
       const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
       return next;
     });
   }, []);

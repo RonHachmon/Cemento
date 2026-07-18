@@ -15,7 +15,7 @@ export interface ColumnDef {
 
 
 
-
+    //added properties
     options?: string[]; 
     isEditable?: boolean; 
     validation?: (value: CellValue) => string | null; 
