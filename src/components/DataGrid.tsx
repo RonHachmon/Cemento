@@ -1,4 +1,4 @@
-import { memo, useMemo, useRef, type CSSProperties } from 'react';
+import { memo, useCallback, useMemo, useRef, type CSSProperties } from 'react';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import type { CellValue, ColumnDef, Row as RowData } from '../data/database';
 import { CellRenderer } from './cells/CellRenderer';
@@ -32,15 +32,10 @@ const GridRow = memo(function GridRow({
   measureElement,
   onChange,
 }: GridRowProps) {
-  // Stable per-column callbacks so a memoized CellRenderer only re-renders when
-  // its own value changes, not on every render of the row it lives in.
-  const cellChangeHandlers = useMemo(() => {
-    const handlers = new Map<string, (value: CellValue) => void>();
-    for (const col of columns) {
-      handlers.set(col.id, (value) => onChange(row.id, col.id, value));
-    }
-    return handlers;
-  }, [columns, row.id, onChange]);
+  const handleCellChange = useCallback(
+    (columnId: string, value: CellValue) => onChange(row.id, columnId, value),
+    [row.id, onChange]
+  );
 
   return (
     <tr
@@ -60,7 +55,7 @@ const GridRow = memo(function GridRow({
           <CellRenderer
             column={col}
             value={row[col.id]}
-            onChange={cellChangeHandlers.get(col.id)!}
+            onChange={(value) => handleCellChange(col.id, value)}
           />
         </td>
       ))}

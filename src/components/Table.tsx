@@ -6,17 +6,22 @@ import DataGrid from './DataGrid';
 
 export default function Table() {
   const { columns } = mockTableDataFaker;
+
   const [rowsById, setRowsById] = useState(
     () => new Map(mockTableDataFaker.data.map((row) => [row.id, row]))
   );
+
   const [visibleColumnIds, setVisibleColumnIds] = useState<Set<string>>(
     () => new Set(columns.map((c) => c.id))
   );
+
   const data = useMemo(() => [...rowsById.values()], [rowsById]);
+
   const sortedColumns = useMemo(
     () => [...columns].sort((a, b) => a.ordinalNo - b.ordinalNo),
     [columns]
   );
+  
   const displayedColumns = useMemo(
     () => sortedColumns.filter((c) => visibleColumnIds.has(c.id)),
     [sortedColumns, visibleColumnIds]
